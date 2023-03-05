@@ -1,17 +1,20 @@
-package org.soloviova.liudmyla;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.testng.Assert.assertEquals;
+package org.soloviova.liudmyla.tests;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.soloviova.liudmyla.entities.PlayerItem;
+import org.soloviova.liudmyla.testdata.TestDataProviders;
 import org.testng.annotations.Test;
 
 import java.util.List;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * This class contains tests related to getAllPlayers controller
@@ -19,7 +22,7 @@ import java.util.List;
  * @author Liudmyla Soloviova
  */
 @Slf4j
-public class GetAllPlayersEndpointTests extends TestBase {
+public class GetAllPlayersEndpointTests extends PlayersControllerTestBase {
 
     @Test
     public void executeGetAllPlayersRequestAndCheckExistingPlayersListIsReturned() {
@@ -28,8 +31,9 @@ public class GetAllPlayersEndpointTests extends TestBase {
         log.info("Executing GET request to {}", endpoint);
 
         final Response response = given()
+                .baseUri(BASE_URL)
                 .when()
-                .get(endpoint)
+                .get("/get/all")
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -42,8 +46,23 @@ public class GetAllPlayersEndpointTests extends TestBase {
         log.info("Obtained response:\n{}", response.asPrettyString());
 
         final List<PlayerItem> players = response.jsonPath().getList("players", PlayerItem.class);
+        assertTrue(players.size() > 0);
         verifyThatAllRegisteredPlayersHaveAllowedAge(players);
         verifyGenderOfRegisteredPlayers(players);
+    }
+
+    @Test(dataProvider = "wrongUrisForGetAllPlayers", dataProviderClass = TestDataProviders.class)
+    public void executeGetAllPlayersRequestWithWrongEndpoint(final String wrongUri) {
+        log.info("Trying to obtain a list of all registered players");
+        final String endpoint = BASE_URL + wrongUri;
+        log.info("Executing GET request to {}", endpoint);
+
+        final Response response = given().when().get(endpoint);
+        log.info("Obtained response:\n{}", response.asPrettyString());
+
+        response.then()
+                .assertThat()
+                .statusCode(in(List.of(404, 405)));
     }
 
     private void verifyThatAllRegisteredPlayersHaveAllowedAge(final List<PlayerItem> registeredPlayers) {
