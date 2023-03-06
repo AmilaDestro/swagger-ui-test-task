@@ -31,9 +31,9 @@ public class GetAllPlayersEndpointTests extends PlayersControllerTestBase {
         log.info("Executing GET request to {}", endpoint);
 
         final Response response = given()
-                .baseUri(BASE_URL)
+                .baseUri(GET_ALL_PLAYERS_URL)
                 .when()
-                .get("/get/all")
+                .get()
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)

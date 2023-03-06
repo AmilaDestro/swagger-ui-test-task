@@ -6,6 +6,7 @@ import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
 import org.soloviova.liudmyla.entities.PlayerIdItem;
 import org.soloviova.liudmyla.mappers.PlayerMapper;
+import org.soloviova.liudmyla.testdata.TestDataProviders;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
@@ -13,10 +14,9 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+
 @Slf4j
 public class GetSinglePlayerEndpointTests extends PlayersControllerTestBase {
-
-    private final String GET_PLAYER_BY_ID_URL = BASE_URL + "/get";
 
     @Test
     public void executeRequestToGetExistingPlayerByIdAndVerifyItMatchesPlayerItemFromTheList() {
@@ -59,10 +59,8 @@ public class GetSinglePlayerEndpointTests extends PlayersControllerTestBase {
                 "'gender' of the found Player doesn't match");
     }
 
-    @Test
-    public void verifyGetPlayerByNonExistingIdLeadsTo404StatusCode() {
-        val nonExistingId = 0;
-
+    @Test(dataProvider = "wrongPlayerIds", dataProviderClass = TestDataProviders.class)
+    public void verifyGetPlayerByNonExistingIdLeadsTo404StatusCode(final Integer nonExistingId) {
         val playerIdBody = new PlayerIdItem(nonExistingId);
 
         log.info("Trying to get a Player with non-existing id {}", nonExistingId);
