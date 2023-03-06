@@ -146,4 +146,30 @@ public class TestDataProviders {
                 }
         };
     }
+
+    @DataProvider
+    public static Object[][] twoDifferentPlayers() {
+        return new Object[][] {
+                {
+                    Player.builder()
+                            .login("oliver89")
+                            .password("YUBbhydg54d91")
+                            .screenName("Oliver_Ryd")
+                            .gender("male")
+                            .age(34)
+                            .role("user")
+                            .build()
+                },
+                {
+                        Player.builder()
+                                .login("HelenaJ")
+                                .password("bfur728ffbul")
+                                .screenName("Helena_Jones")
+                                .gender("female")
+                                .age(25)
+                                .role("admin")
+                                .build()
+                }
+        };
+    }
 }

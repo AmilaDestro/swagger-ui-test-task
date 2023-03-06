@@ -32,7 +32,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
                 .response()
                 .as(Player.class);
 
-        verifyThatPlayerIsPresentInPlayerItemsList(createdPlayer, true);
+        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer, true);
 
         assertEquals(createdPlayer.getLogin(), playerToCreate.getLogin(),
                 "Created Player's 'login' doesn't match");
@@ -58,7 +58,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
                 .jsonPath()
                 .getObject("", Player.class);
 
-        verifyThatPlayerIsPresentInPlayerItemsList(createdPlayer1, true);
+        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer1, true);
 
         createPlayerSafely(player2, "user")
                 .then()

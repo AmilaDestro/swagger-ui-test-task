@@ -25,7 +25,7 @@ import static org.testng.Assert.assertEquals;
 @Slf4j
 public abstract class PlayerTestBase {
     protected final List<Integer> playersToDelete = new ArrayList<>();
-    protected final PlayerControllerHttpClient httpClient = new PlayerControllerHttpClient();
+    protected final PlayerControllerHttpClient httpClient = PlayerControllerHttpClient.getInstance();
 
     @BeforeClass
     public void setupBeforeTests() {
@@ -37,31 +37,56 @@ public abstract class PlayerTestBase {
         deleteCreatedPlayers();
     }
 
+    /**
+     * Creates a new Player in the app and adds its id to the list for deletion after test
+     * if the Player was created successfully
+     *
+     * @param player {@link Player} entity to create
+     * @param editor role of a user who is going to create a new player (user, admin or supervisor)
+     *
+     * @return {@link Response} obtained after execution of the HTTP request
+     */
     protected Response createPlayerSafely(final Player player, final String editor) {
         final Response response = httpClient.createPlayer(player, editor);
         if (response.getStatusCode() == 200 || response.getStatusCode() == 201) {
-            Player createdPlayer = response.jsonPath().getObject("", Player.class);
+            Player createdPlayer = response.as(Player.class);
             playersToDelete.add(createdPlayer.getId());
         }
         return response;
     }
 
-    protected Response deletePlayerSafely(final Integer playerId) {
+    /**
+     * Deletes the Player with the given id and removes its id from the list for test data clean up
+     * if the deletion was successful.
+     *
+     * @param playerId of the Player to delete
+     * @param editor role of a user who is going to delete the player (user, admin or supervisor)
+     *
+     * @return {@link Response} obtained after execution of the HTTP request
+     */
+    protected Response deletePlayerSafely(final Integer playerId, final String editor) {
         log.info("Performing safe delete of Player {}", playerId);
         Optional<Integer> playerIdIsPreparedForDeletion = playersToDelete.stream()
                 .filter(id -> Objects.equals(id, playerId))
                 .findFirst();
-        Response response = httpClient.deletePlayer(playerId, "supervisor");
+        Response response = httpClient.deletePlayer(playerId, editor);
 
-        if (playerIdIsPreparedForDeletion.isPresent()) {
+        if (playerIdIsPreparedForDeletion.isPresent() && response.getStatusCode() < 400) {
             playersToDelete.remove(playerId);
         }
         return response;
     }
 
-    protected void verifyThatPlayerIsPresentInPlayerItemsList(final Player createdPlayer,
-                                                              final boolean shouldBeFound) {
-        assertEquals(createdPlayerIsFoundAmongTheListOfAllPlayerItems(createdPlayer), shouldBeFound);
+    /**
+     * Checks whether specified Player is available in all players list by id
+     *
+     * @param createdPlayer {@link Player} which is being checked
+     * @param shouldBeAvailable boolean parameter which indicates whether the specified player is expected to be
+     *                          available in all players list
+     */
+    protected void checkIfPlayerIsAvailableInAllPlayersList(final Player createdPlayer,
+                                                            final boolean shouldBeAvailable) {
+        assertEquals(createdPlayerIsFoundAmongTheListOfAllPlayerItems(createdPlayer), shouldBeAvailable);
     }
 
     private boolean createdPlayerIsFoundAmongTheListOfAllPlayerItems(final Player createdPlayer) {

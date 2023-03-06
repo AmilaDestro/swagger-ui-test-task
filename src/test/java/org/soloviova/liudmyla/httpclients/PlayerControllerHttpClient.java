@@ -13,17 +13,35 @@ import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
+/**
+ * This class contains common functionality that actually performs create, delete, update and get operations on players
+ * but does not contain assertions. All assertions are made in tests.
+ *
+ * @author Liudmyla Soloviova
+ */
 @Slf4j
 public class PlayerControllerHttpClient {
     public static final String BASE_URL = "http://3.68.165.45/player";
-    public static final String GET_PLAYER_BY_ID_URL = BASE_URL + "/get";
-    public static final String GET_ALL_PLAYERS_URL = BASE_URL + "/get/all";
-    public static final String CREATE_PLAYER_URL = BASE_URL + "/create/{editor}";
-    public static final String DELETE_PLAYER_URL = BASE_URL + "/delete/{editor}";
+    private static final String GET_PLAYER_BY_ID_URL = BASE_URL + "/get";
+    private static final String GET_ALL_PLAYERS_URL = BASE_URL + "/get/all";
+    private static final String CREATE_PLAYER_URL = BASE_URL + "/create/{editor}";
+    private static final String DELETE_PLAYER_URL = BASE_URL + "/delete/{editor}";
+    private static PlayerControllerHttpClient playerControllerClient;
 
-    private final PlayerMapper mapper = PlayerMapper.getInstance();
+    private final PlayerMapper mapper;
 
-    public Response getAllPlayers() {
+    private PlayerControllerHttpClient() {
+        mapper = PlayerMapper.getInstance();
+    }
+
+    public static synchronized PlayerControllerHttpClient getInstance() {
+        if (playerControllerClient == null) {
+            playerControllerClient = new PlayerControllerHttpClient();
+        }
+        return playerControllerClient;
+    }
+
+    public synchronized Response getAllPlayers() {
         log.info("Getting list of all registered users");
         final Response response = given().baseUri(GET_ALL_PLAYERS_URL).when().get();
         log.info("Obtained response: {}", response.asPrettyString());
@@ -31,7 +49,7 @@ public class PlayerControllerHttpClient {
         return response;
     }
 
-    public List<PlayerItem> getAllPlayersSuppressRequestException() {
+    public synchronized List<PlayerItem> getAllPlayersSuppressRequestException() {
         try {
             return getAllPlayers()
                     .then()
@@ -44,7 +62,7 @@ public class PlayerControllerHttpClient {
         }
     }
 
-    public Response getPlayerById(final Integer playerId) {
+    public synchronized Response getPlayerById(final Integer playerId) {
         log.info("Getting a Player with id {}", playerId);
         final PlayerIdItem playerIdItem = new PlayerIdItem(playerId);
 
@@ -58,16 +76,16 @@ public class PlayerControllerHttpClient {
         return response;
     }
 
-    public Player getPlayerByIdSuppressRequestException(final Integer playerId) {
+    public synchronized Player getPlayerByIdSuppressRequestException(final Integer playerId) {
         try {
-            return getPlayerById(playerId).then().extract().jsonPath().getObject("", Player.class);
+            return getPlayerById(playerId).then().extract().as(Player.class);
         } catch (Exception e) {
             log.error("An exception occurred while getting a Player with id {}: {}", playerId, e.getMessage());
             throw new AssertionError(String.format("Player with id %s was not found", playerId));
         }
     }
 
-    public Response deletePlayer(final Integer playerId, final String editor) {
+    public synchronized Response deletePlayer(final Integer playerId, final String editor) {
         log.info("Deleting Player with id {}", playerId);
         final PlayerIdItem playerIdItem = new PlayerIdItem(playerId);
 
@@ -81,7 +99,7 @@ public class PlayerControllerHttpClient {
         return response;
     }
 
-    public Response createPlayer(final Player player, final String editor) {
+    public synchronized Response createPlayer(final Player player, final String editor) {
         log.info("Creating a new Player: {}", player.toString());
         log.info("Executing GET request to endpoint: {}, where editor - {}", CREATE_PLAYER_URL, editor);
 
@@ -92,7 +110,7 @@ public class PlayerControllerHttpClient {
                 .param("password", player.getPassword())
                 .param("role", player.getRole())
                 .param("screenName", player.getScreenName());
-        log.info("Request params: {}", givenRequestParams.log().params());
+        log.info("Request params: {}", givenRequestParams.log());
 
         final Response response = givenRequestParams.get(CREATE_PLAYER_URL, editor);
         log.info("Obtained response: {}", response.asPrettyString());
