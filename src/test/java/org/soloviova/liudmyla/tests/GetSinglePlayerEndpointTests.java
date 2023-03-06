@@ -10,6 +10,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+/**
+ * Contains tests related to Get Player by id operations
+ *
+ * @author Liudmyla Soloviova
+ */
 public class GetSinglePlayerEndpointTests extends PlayerTestBase {
 
     @Test
