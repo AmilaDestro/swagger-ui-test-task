@@ -13,6 +13,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.soloviova.liudmyla.httpclients.PlayerControllerHttpClient.BASE_URL;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -22,18 +23,11 @@ import static org.testng.Assert.assertTrue;
  * @author Liudmyla Soloviova
  */
 @Slf4j
-public class GetAllPlayersEndpointTests extends PlayersControllerTestBase {
+public class GetAllPlayersEndpointTests extends PlayerTestBase {
 
     @Test
     public void executeGetAllPlayersRequestAndCheckExistingPlayersListIsReturned() {
-        log.info("Trying to obtain a list of all registered players");
-        final String endpoint = BASE_URL + "/get/all";
-        log.info("Executing GET request to {}", endpoint);
-
-        final Response response = given()
-                .baseUri(GET_ALL_PLAYERS_URL)
-                .when()
-                .get()
+        final Response response = httpClient.getAllPlayers()
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
@@ -43,8 +37,6 @@ public class GetAllPlayersEndpointTests extends PlayersControllerTestBase {
                 .extract()
                 .response();
 
-        log.info("Obtained response:\n{}", response.asPrettyString());
-
         final List<PlayerItem> players = response.jsonPath().getList("players", PlayerItem.class);
         assertTrue(players.size() > 0);
         verifyThatAllRegisteredPlayersHaveAllowedAge(players);
@@ -53,7 +45,6 @@ public class GetAllPlayersEndpointTests extends PlayersControllerTestBase {
 
     @Test(dataProvider = "wrongUrisForGetAllPlayers", dataProviderClass = TestDataProviders.class)
     public void executeGetAllPlayersRequestWithWrongEndpoint(final String wrongUri) {
-        log.info("Trying to obtain a list of all registered players");
         final String endpoint = BASE_URL + wrongUri;
         log.info("Executing GET request to {}", endpoint);
 

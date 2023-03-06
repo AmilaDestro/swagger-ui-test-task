@@ -15,28 +15,19 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 @Slf4j
-public class CreatePlayerEndpointTests extends PlayersControllerTestBase {
+public class CreatePlayerEndpointTests extends PlayerTestBase {
 
     @Test(dataProvider = "validPlayersToCreateWithEditor", dataProviderClass = TestDataProviders.class)
     public void createValidNewPlayerByAdminOrSupervisor(final Player playerToCreate,
                                                         final String editor) {
-        log.info("Creating a new Player: {}", playerToCreate.toString());
 
-        Response response = given()
-                .param("age", playerToCreate.getAge())
-                .param("gender", playerToCreate.getGender())
-                .param("login", playerToCreate.getLogin())
-                .param("password", playerToCreate.getPassword())
-                .param("role", playerToCreate.getRole())
-                .param("screenName", playerToCreate.getScreenName())
-                .get(CREATE_PLAYER_URL, editor)
+
+        Response response = httpClient.createPlayer(playerToCreate, editor)
                 .then()
                 .statusCode(in(List.of(200, 201)))
                 .contentType(ContentType.JSON)
                 .extract()
                 .response();
-
-        log.info("Obtained response: {}", response.asPrettyString());
 
         Player createdPlayer = response.jsonPath().getObject("", Player.class);
 
