@@ -204,4 +204,30 @@ public class TestDataProviders {
                 }
         };
     }
+
+    @DataProvider
+    public static Object[][] userThenAdminPlayers() {
+        return new Object[][] {
+                {
+                    Player.builder()
+                            .login("john_doe")
+                            .screenName("John Doe")
+                            .password("vbervy3747bvvevn")
+                            .age(32)
+                            .gender("male")
+                            .role("user")
+                            .build()
+                },
+                {
+                        Player.builder()
+                                .login("olivia_willson")
+                                .screenName("Olivia_W")
+                                .password("bu3r4buf34")
+                                .age(29)
+                                .gender("female")
+                                .role("admin")
+                                .build()
+                }
+        };
+    }
 }

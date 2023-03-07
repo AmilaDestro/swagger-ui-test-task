@@ -26,6 +26,7 @@ public class PlayerControllerHttpClient {
     private static final String GET_ALL_PLAYERS_URL = BASE_URL + "/get/all";
     private static final String CREATE_PLAYER_URL = BASE_URL + "/create/{editor}";
     private static final String DELETE_PLAYER_URL = BASE_URL + "/delete/{editor}";
+    private static final String UPDATE_PLAYER_URL = BASE_URL + "/update/{editor}/{id}";
     private static PlayerControllerHttpClient playerControllerClient;
 
     private final PlayerMapper mapper;
@@ -110,9 +111,29 @@ public class PlayerControllerHttpClient {
                 .param("password", player.getPassword())
                 .param("role", player.getRole())
                 .param("screenName", player.getScreenName());
-        log.info("Request params: {}", givenRequestParams.log());
+        log.info("Request params: {}", givenRequestParams.log().params());
 
         final Response response = givenRequestParams.get(CREATE_PLAYER_URL, editor);
+        log.info("Obtained response: {}", response.asPrettyString());
+
+        return response;
+    }
+
+    public synchronized Response updatePlayer(final Integer playerId,
+                                              final String editorLogin,
+                                              final Player updatedPlayer) {
+        log.info("Updating player with id {} by editor {}. Data to update: {}",
+                playerId, editorLogin, updatedPlayer.toString());
+        log.info("Executing PATCH request to endpoint: {}, where editor - {}, id - {}",
+                UPDATE_PLAYER_URL, editorLogin, playerId);
+        log.info("Request body to be sent: {}", mapper.mapPlayerObjectToJsonStringSuppressException(updatedPlayer));
+
+        val response = given()
+                .contentType(ContentType.JSON)
+                .body(updatedPlayer)
+                .when()
+                .patch(UPDATE_PLAYER_URL, editorLogin, playerId);
+
         log.info("Obtained response: {}", response.asPrettyString());
 
         return response;

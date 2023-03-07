@@ -27,10 +27,20 @@ import static org.testng.Assert.assertEquals;
  */
 @Slf4j
 public abstract class PlayerTestBase {
-    protected final List<Integer> playersToDelete = new ArrayList<>();
-    protected final PlayerControllerHttpClient httpClient = PlayerControllerHttpClient.getInstance();
-    protected final String supervisorLogin = "supervisor";
+    protected final List<Integer> playersToDelete;
+    protected final PlayerControllerHttpClient httpClient;
+    protected final String supervisorLogin;
+    protected final Integer supervisorId;
     protected String adminLogin;
+    private final Player defaultSupervisorCondition;
+
+    PlayerTestBase() {
+        httpClient = PlayerControllerHttpClient.getInstance();
+        supervisorLogin = "supervisor";
+        supervisorId = getPlayerIdByLogin(supervisorLogin);
+        playersToDelete = new ArrayList<>();
+        defaultSupervisorCondition = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
+    }
 
     @BeforeClass
     public void setupBeforeAllTests() {
@@ -45,6 +55,7 @@ public abstract class PlayerTestBase {
     @AfterMethod
     public void cleanUpAfterEachTest() {
         deleteCreatedPlayers();
+        restoreSupervisorData();
     }
 
     /**
@@ -174,5 +185,13 @@ public abstract class PlayerTestBase {
         log.info("Creating admin user for tests: {}", adminToCreate);
         val response = createPlayerSafely(adminToCreate, "supervisor");
         adminLogin = isStatusCodeOk(response) ? "testAdmin1" : getAdminLogin();
+    }
+
+    private void restoreSupervisorData() {
+        val id = getPlayerIdByLogin(supervisorLogin);
+        val supervisorAfterTests = httpClient.getPlayerByIdSuppressRequestException(id);
+        if (!supervisorAfterTests.equals(defaultSupervisorCondition)) {
+            httpClient.updatePlayer(id, supervisorLogin, defaultSupervisorCondition);
+        }
     }
 }
