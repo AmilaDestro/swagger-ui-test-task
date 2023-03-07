@@ -188,4 +188,20 @@ public class TestDataProviders {
                 }
         };
     }
+
+    @DataProvider
+    public static Object[][] oneUser() {
+        return new Object[][] {
+                {
+                        Player.builder()
+                                .login("richard_bloom")
+                                .screenName("Richard_Bloom_Jr")
+                                .password("bcry4748ch")
+                                .age(34)
+                                .gender("male")
+                                .role("user")
+                                .build()
+                }
+        };
+    }
 }

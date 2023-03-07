@@ -52,7 +52,7 @@ public abstract class PlayerTestBase {
      * if the Player was created successfully
      *
      * @param player {@link Player} entity to create
-     * @param editor login of a user who is going to create a new player
+     * @param editor login of a user who is going to create the new player
      * @return {@link Response} obtained after execution of the HTTP request
      */
     protected Response createPlayerSafely(final Player player, final String editor) {
@@ -69,7 +69,7 @@ public abstract class PlayerTestBase {
      * if the deletion was successful.
      *
      * @param playerId of the Player to delete
-     * @param editor   role of a user who is going to delete the player (user, admin or supervisor)
+     * @param editor   login of a user who is going to delete the player
      * @return {@link Response} obtained after execution of the HTTP request
      */
     protected Response deletePlayerSafely(final Integer playerId, final String editor) {
