@@ -8,10 +8,17 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
 
+/**
+ * Contains tests related to Update Player operations
+ *
+ * @author Liudmyla Soloviova
+ */
 public class UpdatePlayerControllerTests extends PlayerTestBase {
 
     @Test(dataProvider = "userThenAdminPlayers", dataProviderClass = TestDataProviders.class,
@@ -69,7 +76,7 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("id", notNullValue())
+                .body("id", equalTo(supervisorId))
                 .body("screenName", equalTo(supervisorToEdit.getScreenName()))
                 .body("login", equalTo(supervisorLogin))
                 .body("age", equalTo(supervisorBeforeUpdate.getAge()))
@@ -195,7 +202,7 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
                 "Player 1 should not have been updated");
     }
 
-    @Test
+    @Test(description = "Check that an admin cannot update the supervisor")
     public void testThatAdminCannotUpdateSupervisor() {
         val supervisor = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
         val toUpdate = Player.builder()
@@ -211,7 +218,8 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertEquals(supervisorAfterUpdate, supervisor, "Supervisor should not have been updated");
     }
 
-    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class)
+    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
+    description = "Check that a user cannot update admins")
     public void testThatUserCannotUpdateAdmin(final Player user) {
         val userId = createPlayerSafely(user, supervisorLogin)
                 .then()
@@ -236,7 +244,8 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertEquals(adminAfterUpdate, admin, "Admin should not have been updated");
     }
 
-    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class)
+    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
+    description = "Check that a user cannot update the supervisor")
     public void testThatUserCannotUpdateSupervisor(final Player user) {
         val userId = createPlayerSafely(user, supervisorLogin)
                 .then()

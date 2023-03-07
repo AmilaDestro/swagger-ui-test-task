@@ -25,7 +25,7 @@ import static org.testng.Assert.assertTrue;
 @Slf4j
 public class GetAllPlayersEndpointTests extends PlayerTestBase {
 
-    @Test
+    @Test(description = "Check that getAllPlayers endpoint returns non-empty list of players")
     public void executeGetAllPlayersRequestAndCheckExistingPlayersListIsReturned() {
         final Response response = httpClient.getAllPlayers()
                 .then()
@@ -43,7 +43,9 @@ public class GetAllPlayersEndpointTests extends PlayerTestBase {
         verifyGenderOfRegisteredPlayers(players);
     }
 
-    @Test(dataProvider = "wrongUrisForGetAllPlayers", dataProviderClass = TestDataProviders.class)
+    @Test(dataProvider = "wrongUrisForGetAllPlayers", dataProviderClass = TestDataProviders.class,
+    description = "Check that sending GET request to wrong URI in order to obtain a list of players " +
+            "leads to 404/405 status code")
     public void executeGetAllPlayersRequestWithWrongEndpoint(final String wrongUri) {
         final String endpoint = BASE_URL + wrongUri;
         log.info("Executing GET request to {}", endpoint);

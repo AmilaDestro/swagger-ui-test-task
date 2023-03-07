@@ -17,7 +17,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class GetSinglePlayerEndpointTests extends PlayerTestBase {
 
-    @Test
+    @Test(description = "Check that a player with id from the common list can be found by its id and returned" +
+            "as a single entity")
     public void getExistingPlayerByIdAndVerifyItMatchesPlayerItemFromTheList() {
         val allPlayerItems = httpClient.getAllPlayersSuppressRequestException();
         assertTrue(allPlayerItems.size() > 0);
@@ -33,7 +34,7 @@ public class GetSinglePlayerEndpointTests extends PlayerTestBase {
                 .extract()
                 .response();
 
-        Player player = response.jsonPath().getObject("", Player.class);
+        Player player = response.as(Player.class);
 
         assertEquals(player.getId(), playerId, "'id' of the found Player doesn't match");
         assertEquals(player.getAge(), existingPlayerItem.getAge(), "'age' of the found Player doesn't match");
@@ -43,7 +44,8 @@ public class GetSinglePlayerEndpointTests extends PlayerTestBase {
                 "'gender' of the found Player doesn't match");
     }
 
-    @Test(dataProvider = "wrongPlayerIds", dataProviderClass = TestDataProviders.class)
+    @Test(dataProvider = "wrongPlayerIds", dataProviderClass = TestDataProviders.class,
+    description = "Check that attempt to get a player by wrong id leads to 404 status code")
     public void verifyGetPlayerByNonExistingIdLeadsTo404StatusCode(final Integer nonExistingId) {
         httpClient.getPlayerById(nonExistingId)
                 .then()

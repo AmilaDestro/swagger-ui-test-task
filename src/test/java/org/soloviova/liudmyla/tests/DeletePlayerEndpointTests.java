@@ -11,6 +11,11 @@ import java.util.List;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.notNullValue;
 
+/**
+ * Contains tests related to Delete Player operations
+ *
+ * @author Liudmyla Soloviova
+ */
 public class DeletePlayerEndpointTests extends PlayerTestBase {
 
     @Test(dataProvider = "playersWithEditorRoleForDeletion", dataProviderClass = TestDataProviders.class,
