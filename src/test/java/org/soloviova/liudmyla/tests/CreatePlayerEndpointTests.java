@@ -19,9 +19,10 @@ import static org.testng.Assert.assertEquals;
  */
 public class CreatePlayerEndpointTests extends PlayerTestBase {
 
-    @Test(dataProvider = "validPlayersToCreateWithEditorRole", dataProviderClass = TestDataProviders.class)
-    public void testThatAdminCanCreateUserAndSupervisorCanCreateAdminAndCheckResponseBody(final Player playerToCreate,
-                                                                                          final String editorRole) {
+    @Test(dataProvider = "playersWithEditorRoleForCreation", dataProviderClass = TestDataProviders.class,
+            description = "Check that supervisor can create both admins and users, and that admin can create admins and users too")
+    public void testThatSupervisorAndAdminCanCreateAdminsAndUsers(final Player playerToCreate,
+                                                                  final String editorRole) {
         final String editor = editorRole.equals("admin") ? adminLogin : supervisorLogin;
         final Player createdPlayerInResponse = createPlayerSafely(playerToCreate, editor)
                 .then()
@@ -46,7 +47,8 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
                 "Created Player's 'role' doesn't match");
     }
 
-    @Test(dataProvider = "twoUsersToCreateOneByOne", dataProviderClass = TestDataProviders.class)
+    @Test(dataProvider = "twoUsersToCreateOneByOne", dataProviderClass = TestDataProviders.class,
+            description = "Check that one user can't create another user")
     public void testThatUserCannotBeCreatedByAnotherUser(final Player player1,
                                                          final Player player2) {
         final Player createdPlayer1 = createPlayerSafely(player1, supervisorLogin)
@@ -67,7 +69,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(player2.getLogin(), false);
     }
 
-    @Test
+    @Test // duplicate
     public void testThatAdminCanCreateAnotherAdmin() {
         final Player secondAdmin = Player.builder()
                 .login("testAdmin2")
@@ -89,20 +91,22 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(secondAdminId, true);
     }
 
-    @Test
-    public void testThatSupervisorCannotCreateAnotherSupervisor() {
-        val supervisorToCreate = Player.builder()
-                .screenName("Supervisor_sister")
-                .age(34)
-                .gender("female")
-                .login("anotherSupervisor")
-                .password("QwertY987")
-                .role("supervisor")
-                .build();
-        createPlayerSafely(supervisorToCreate, supervisorLogin)
+    @Test(dataProvider = "customSupervisor", dataProviderClass = TestDataProviders.class,
+            description = "Check that a new supervisor cannot be created even by existing supervisor")
+    public void testThatSupervisorCannotCreateAnotherSupervisor(final Player customSupervisor) {
+        createPlayerSafely(customSupervisor, supervisorLogin)
                 .then()
                 .statusCode(403);
-        checkIfPlayerIsAvailableInAllPlayersList(supervisorToCreate.getLogin(), false);
+        checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
+    }
+
+    @Test(dataProvider = "customSupervisor", dataProviderClass = TestDataProviders.class,
+            description = "Check that admin cannot create a new supervisor")
+    public void testThatAdminCannotCreateSupervisor(final Player customSupervisor) {
+        createPlayerSafely(customSupervisor, adminLogin)
+                .then()
+                .statusCode(403);
+        checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
     }
 
     @Test(dataProvider = "usersBeyondAllowedAge", dataProviderClass = TestDataProviders.class)
@@ -153,5 +157,25 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
 
         final Player firstPlayerAfterSecondPlayerCreation = httpClient.getPlayerByIdSuppressRequestException(firstPlayerId);
         assertEquals(firstPlayerAfterSecondPlayerCreation, firstPlayerAfterCreation);
+    }
+
+    @Test(dataProvider = "userAndSupervisorThenUserAndAdmin", dataProviderClass = TestDataProviders.class,
+    description = "Check that a user cannot create neither supervisor nor admin")
+    public void testThatUserCannotCreateAdminOrSupervisor(final Player user,
+                                                          final Player superAdmin) {
+        val userId = createPlayerSafely(user, supervisorLogin)
+                .then()
+                .statusCode(in(List.of(200, 201)))
+                .contentType(ContentType.JSON)
+                .body("id", notNullValue())
+                .extract()
+                .as(Player.class)
+                .getId();
+        checkIfPlayerIsAvailableInAllPlayersList(userId, true);
+
+        createPlayerSafely(superAdmin, user.getLogin())
+                .then()
+                .statusCode(403);
+        checkIfPlayerIsAvailableInAllPlayersList(superAdmin.getLogin(), false);
     }
 }

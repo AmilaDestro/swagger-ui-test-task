@@ -13,10 +13,10 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class DeletePlayerEndpointTests extends PlayerTestBase {
 
-    @Test(dataProvider = "validPlayersToCreateWithEditorRole", dataProviderClass = TestDataProviders.class,
-    description = "Check that the supervisor can delete admins and that an admin can delete users")
-    public void testThatAdminCanDeleteUserAndSupervisorCanDeleteAdmin(final Player player,
-                                                                      final String editorRole) {
+    @Test(dataProvider = "playersWithEditorRoleForDeletion", dataProviderClass = TestDataProviders.class,
+    description = "Check that the supervisor can delete admins and users, and that an admin can delete users")
+    public void testThatAdminCanDeleteUserAndSupervisorCanDeleteBothAdminAndUser(final Player player,
+                                                                                 final String editorRole) {
         final String editor = editorRole.equals("admin") ? adminLogin : supervisorLogin;
         final Player createdPlayer = createPlayerSafely(player, editor)
                 .then()
@@ -67,16 +67,9 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(firstPlayerId, true);
     }
 
-    @Test(description = "Check that an admin can delete himself")
-    public void testThatAdminCanDeleteHimself() {
-        val customAdmin = Player.builder()
-                .login("super_admin")
-                .password("BBUd6426fg28")
-                .screenName("SuperAdmin")
-                .role("admin")
-                .gender("male")
-                .age(40)
-                .build();
+    @Test(dataProvider = "oneAdmin", dataProviderClass = TestDataProviders.class,
+            description = "Check that an admin cannot delete himself")
+    public void testThatAdminCannotDeleteHimself(final Player customAdmin) {
         val customAdminId = createPlayerSafely(customAdmin, supervisorLogin)
                 .then()
                 .statusCode(in(List.of(200, 201)))
@@ -89,13 +82,12 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
 
         deletePlayerSafely(customAdminId, customAdmin.getLogin())
                 .then()
-                .statusCode(in(List.of(200, 204)));
-        checkIfPlayerIsAvailableInAllPlayersList(customAdminId, false);
+                .statusCode(403);
+        checkIfPlayerIsAvailableInAllPlayersList(customAdminId, true);
     }
 
     @Test(description = "Check that the supervisor cannot be deleted by admins")
     public void testThatSupervisorCannotBeDeletedByAdmin() {
-        val supervisorId = getPlayerIdByLogin(supervisorLogin);
         httpClient.deletePlayer(supervisorId, adminLogin)
                 .then()
                 .statusCode(403);
@@ -105,7 +97,6 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
 
     @Test(description = "Check that the supervisor cannot be deleted by himself")
     public void testThatSupervisorCannotBeDeletedByHimself() {
-        val supervisorId = getPlayerIdByLogin(supervisorLogin);
         httpClient.deletePlayer(supervisorId, supervisorLogin)
                 .then()
                 .statusCode(403);

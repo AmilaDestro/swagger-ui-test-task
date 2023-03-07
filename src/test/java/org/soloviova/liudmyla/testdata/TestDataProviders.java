@@ -23,9 +23,60 @@ public class TestDataProviders {
     }
 
     @DataProvider
-    public static Object[][] validPlayersToCreateWithEditorRole() {
+    public static Object[][] playersWithEditorRoleForCreation() {
+        return new Object[][] {
+                {
+                    Player.builder()
+                            .login("Adventurer")
+                            .password("VyqvTtY736JJSD")
+                            .screenName("Alice Ashcroft")
+                            .gender("female")
+                            .age(24)
+                            .role("user")
+                            .build(),
+                        "admin"
+                },
+                {
+                        Player.builder()
+                                .login("thomas_birne")
+                                .password("uTCcvjew64ejd3")
+                                .screenName("Tom Birne")
+                                .gender("male")
+                                .age(29)
+                                .role("admin")
+                                .build(),
+                        "supervisor"
+                },
+                {
+                        Player.builder()
+                                .login("Starkiller99")
+                                .password("nnjcei2gc")
+                                .screenName("Neil_Starkiller")
+                                .gender("male")
+                                .age(23)
+                                .role("user")
+                                .build(),
+                        "supervisor"
+                },
+                {
+                        Player.builder()
+                                .login("hanna_epic")
+                                .password("Bhcuweyyvxcuq")
+                                .screenName("Johanna_The_One")
+                                .gender("female")
+                                .age(28)
+                                .role("admin")
+                                .build(),
+                        "admin"
+                }
+        };
+    }
+
+    @DataProvider
+    public static Object[][] playersWithEditorRoleForDeletion() {
         return new Object[][]{
-                {Player.builder()
+                {
+                    Player.builder()
                         .age(31)
                         .role("user")
                         .gender("male")
@@ -43,6 +94,17 @@ public class TestDataProviders {
                                 .login("jane_smith")
                                 .password("1Passw0rd567")
                                 .screenName("Jane_Smith")
+                                .build(),
+                        "supervisor"
+                },
+                {
+                        Player.builder()
+                                .age(27)
+                                .role("user")
+                                .gender("male")
+                                .login("alex_smith")
+                                .password("qwert09Password0123")
+                                .screenName("AleXSmith")
                                 .build(),
                         "supervisor"
                 }
@@ -225,6 +287,80 @@ public class TestDataProviders {
                                 .password("bu3r4buf34")
                                 .age(29)
                                 .gender("female")
+                                .role("admin")
+                                .build()
+                }
+        };
+    }
+
+    @DataProvider
+    public static Object[][] oneAdmin() {
+        return new Object[][] {
+                {
+                        Player.builder()
+                                .login("super_admin")
+                                .password("BBUd6426fg28")
+                                .screenName("SuperAdmin")
+                                .role("admin")
+                                .gender("male")
+                                .age(40)
+                                .build()
+                }
+        };
+    }
+
+    @DataProvider
+    public static Object[][] customSupervisor() {
+        return new Object[][] {
+                {
+                        Player.builder()
+                                .screenName("Supervisor_sister")
+                                .age(34)
+                                .gender("female")
+                                .login("anotherSupervisor")
+                                .password("QwertY987")
+                                .role("supervisor")
+                                .build()
+                }
+        };
+    }
+
+    @DataProvider
+    public static Object[][] userAndSupervisorThenUserAndAdmin() {
+        return new Object[][] {
+                {
+                    Player.builder()
+                            .login("chrome_user")
+                            .password("vtde2fd")
+                            .screenName("Lucky_Player")
+                            .age(30)
+                            .gender("female")
+                            .role("user")
+                            .build(),
+                        Player.builder()
+                                .screenName("SuperSTAR")
+                                .age(30)
+                                .gender("female")
+                                .login("StarSupervisor")
+                                .password("Byde2gd74")
+                                .role("supervisor")
+                                .build()
+                },
+                {
+                        Player.builder()
+                                .login("unknown_user")
+                                .password("VEvnji5u")
+                                .screenName("UNKNOWN")
+                                .age(35)
+                                .gender("male")
+                                .role("user")
+                                .build(),
+                        Player.builder()
+                                .screenName("molly_cooper")
+                                .age(26)
+                                .gender("female")
+                                .login("SweetMolly")
+                                .password("vn3igu5")
                                 .role("admin")
                                 .build()
                 }
