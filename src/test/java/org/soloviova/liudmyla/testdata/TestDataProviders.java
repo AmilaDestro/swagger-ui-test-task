@@ -23,7 +23,7 @@ public class TestDataProviders {
     }
 
     @DataProvider
-    public static Object[][] validPlayersToCreateWithEditor() {
+    public static Object[][] validPlayersToCreateWithEditorRole() {
         return new Object[][]{
                 {Player.builder()
                         .age(31)
@@ -158,7 +158,15 @@ public class TestDataProviders {
                             .gender("male")
                             .age(34)
                             .role("user")
-                            .build()
+                            .build(),
+                        Player.builder()
+                                .login("james_frost")
+                                .password("nvbui4u74")
+                                .screenName("James Frost")
+                                .gender("male")
+                                .age(37)
+                                .role("user")
+                                .build()
                 },
                 {
                         Player.builder()
@@ -167,6 +175,14 @@ public class TestDataProviders {
                                 .screenName("Helena_Jones")
                                 .gender("female")
                                 .age(25)
+                                .role("admin")
+                                .build(),
+                        Player.builder()
+                                .login("emilia_the_player")
+                                .password("vn43n8G&GFf")
+                                .screenName("Emilia_Holmes")
+                                .gender("female")
+                                .age(33)
                                 .role("admin")
                                 .build()
                 }

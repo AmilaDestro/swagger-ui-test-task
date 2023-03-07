@@ -13,60 +13,66 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class DeletePlayerEndpointTests extends PlayerTestBase {
 
-    @Test(dataProvider = "validPlayersToCreateWithEditor", dataProviderClass = TestDataProviders.class)
-    public void deleteExistingPlayerBySupervisorOrAdmin(final Player player,
-                                                        final String editor) {
-        final Player createdPlayer = createPlayerSafely(player, "supervisor")
+    @Test(dataProvider = "validPlayersToCreateWithEditorRole", dataProviderClass = TestDataProviders.class)
+    public void testThatAdminCanDeleteUserAndSupervisorCanDeleteAdmin(final Player player,
+                                                                      final String editorRole) {
+        final String editor = editorRole.equals("admin") ? adminLogin : supervisorLogin;
+        final Player createdPlayer = createPlayerSafely(player, editor)
                 .then()
                 .statusCode(in(List.of(200, 201)))
                 .contentType(ContentType.JSON)
                 .body("id", notNullValue())
                 .extract()
                 .as(Player.class);
-        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer, true);
+        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer.getId(), true);
 
         final Integer playerId = createdPlayer.getId();
         deletePlayerSafely(playerId, editor)
                 .then()
                 .statusCode(in(List.of(200, 204)));
 
-        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer, false);
+        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer.getId(), false);
     }
 
-    @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class)
-    public void deleteExistingPlayerByUser(final Player player) {
-        final Player createdPlayer = createPlayerSafely(player, "supervisor")
+    @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class,
+    description = "Checks that one user can't delete another user and one admin can't delete another admin")
+    public void testThatOnePlayerWithUserOrAdminRoleCannotDeleteAnotherPlayer(final Player player1,
+                                                                              final Player player2) {
+        final Player createdPlayer1 = createPlayerSafely(player1, supervisorLogin)
                 .then()
                 .statusCode(in(List.of(200, 201)))
                 .contentType(ContentType.JSON)
                 .body("id", notNullValue())
                 .extract()
                 .as(Player.class);
-        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer, true);
+        final Integer firstPlayerId = createdPlayer1.getId();
+        checkIfPlayerIsAvailableInAllPlayersList(firstPlayerId, true);
 
-        final Integer playerId = createdPlayer.getId();
-        deletePlayerSafely(playerId, "user")
+        final Player createdPlayer2 = createPlayerSafely(player2, supervisorLogin)
+                .then()
+                .statusCode(in(List.of(200, 201)))
+                .contentType(ContentType.JSON)
+                .body("id", notNullValue())
+                .extract()
+                .as(Player.class);
+        final Integer secondPlayerId = createdPlayer2.getId();
+        checkIfPlayerIsAvailableInAllPlayersList(secondPlayerId, true);
+
+        final String secondPlayerLogin = getPlayerLogin(secondPlayerId);
+        deletePlayerSafely(firstPlayerId, secondPlayerLogin)
                 .then()
                 .statusCode(403);
 
-        checkIfPlayerIsAvailableInAllPlayersList(createdPlayer, true);
+        checkIfPlayerIsAvailableInAllPlayersList(firstPlayerId, true);
     }
 
     @Test
-    public void deleteSupervisorByUser() {
-        val supervisorPlayerItem = httpClient.getAllPlayersSuppressRequestException()
-                .stream()
-                .filter(playerItem ->
-                    httpClient.getPlayerByIdSuppressRequestException(playerItem.getId()).getRole().equals("supervisor")
-                )
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("No players with 'supervisor' role were found"));
-        final Player supervisor = httpClient.getPlayerByIdSuppressRequestException(supervisorPlayerItem.getId());
-
-        httpClient.deletePlayer(supervisorPlayerItem.getId(), "user")
+    public void deleteSupervisorByAdmin() {
+        val supervisorId = getPlayerIdByLogin(supervisorLogin);
+        httpClient.deletePlayer(supervisorId, adminLogin)
                 .then()
                 .statusCode(403);
 
-        checkIfPlayerIsAvailableInAllPlayersList(supervisor, true);
+        checkIfPlayerIsAvailableInAllPlayersList(supervisorId, true);
     }
 }
