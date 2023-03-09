@@ -35,3 +35,5 @@ New players also have the following properties:
 9. User can update other users besides himself.
 10. Admin can update other admins besides himself.
 11. User can update admin.
+
+Found bugs are marked by @Severity annotation in tests. Besides I noticed that the rest part of the tests may fail due to slow request execution.
