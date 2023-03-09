@@ -1,12 +1,16 @@
 package org.soloviova.liudmyla.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
 import org.soloviova.liudmyla.testdata.TestDataProviders;
 import org.testng.annotations.Test;
 
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -15,8 +19,10 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Liudmyla Soloviova
  */
+@Feature("Get a single Player by playerId endpoint tests at POST /player/get")
 public class GetSinglePlayerEndpointTests extends PlayerTestBase {
 
+    @Description("Test that an existing Player from all players list can be found by his/her playerId.")
     @Test(description = "Check that a player with id from the common list can be found by its id and returned" +
             "as a single entity")
     public void getExistingPlayerByIdAndVerifyItMatchesPlayerItemFromTheList() {
@@ -44,6 +50,8 @@ public class GetSinglePlayerEndpointTests extends PlayerTestBase {
                 "'gender' of the found Player doesn't match");
     }
 
+    @Description("Test that attempt to get a Player by wrong/non-existing playerId leads to the error with 404 status code.")
+    @Severity(SeverityLevel.NORMAL)
     @Test(dataProvider = "wrongPlayerIds", dataProviderClass = TestDataProviders.class,
     description = "Check that attempt to get a player by wrong id leads to 404 status code")
     public void verifyGetPlayerByNonExistingIdLeadsTo404StatusCode(final Integer nonExistingId) {

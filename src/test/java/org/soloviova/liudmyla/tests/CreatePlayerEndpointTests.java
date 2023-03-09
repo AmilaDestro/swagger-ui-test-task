@@ -1,5 +1,9 @@
 package org.soloviova.liudmyla.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
@@ -17,8 +21,12 @@ import static org.testng.Assert.assertEquals;
  *
  * @author Liudmyla Soloviova
  */
+@Feature("Create Player endpoint tests at GET /player/create/{editor}")
 public class CreatePlayerEndpointTests extends PlayerTestBase {
 
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Test that the supervisor can create admins and users, and that any admin can create admins and users." +
+            "The test also checks fields' values in returned response body after admin/user creation.")
     @Test(dataProvider = "playersWithEditorRoleForCreation", dataProviderClass = TestDataProviders.class,
             description = "Check that supervisor can create both admins and users, and that admin can create " +
                     "admins and users too")
@@ -48,6 +56,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
                 "Created Player's 'role' doesn't match");
     }
 
+    @Description("Test that one user cannot create another user.")
     @Test(dataProvider = "twoUsersToCreateOneByOne", dataProviderClass = TestDataProviders.class,
             description = "Check that one user can't create another user")
     public void testThatUserCannotBeCreatedByAnotherUser(final Player player1,
@@ -70,6 +79,8 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(player2.getLogin(), false);
     }
 
+    @Severity(SeverityLevel.MINOR)
+    @Description("Test that the existing supervisor cannot create a new supervisor.")
     @Test(dataProvider = "customSupervisor", dataProviderClass = TestDataProviders.class,
             description = "Check that a new supervisor cannot be created even by existing supervisor")
     public void testThatSupervisorCannotCreateAnotherSupervisor(final Player customSupervisor) {
@@ -79,6 +90,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
     }
 
+    @Description("Test that an admin cannot create a new supervisor.")
     @Test(dataProvider = "customSupervisor", dataProviderClass = TestDataProviders.class,
             description = "Check that admin cannot create a new supervisor")
     public void testThatAdminCannotCreateSupervisor(final Player customSupervisor) {
@@ -88,6 +100,8 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
     }
 
+    @Description("Test that any new user or admin cannot be created if his/her age is beyond allowed range " +
+            "(less than 16 and more than 60 year old).")
     @Test(dataProvider = "usersBeyondAllowedAge", dataProviderClass = TestDataProviders.class,
     description = "Check that new users/admins cannot be created if their age is less than 16 and more than 60")
     public void testThatNewUsersBeyondAllowedAgeCannotBeCreated(final Player player) {
@@ -97,6 +111,8 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(player.getLogin(), false);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Test that it is impossible to create 2 users with the same login.")
     @Test(dataProvider = "twoUsersWithTheSameLogin", dataProviderClass = TestDataProviders.class,
     description = "Check that 2 users with the same login cannot be created")
     public void testThatTwoUsersWithTheSameLoginCannotBeCreated(final Player player1,
@@ -113,12 +129,13 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         createPlayerSafely(player2, adminLogin)
                 .then()
                 .statusCode(403);
-        checkIfPlayerIsAvailableInAllPlayersList(player2.getLogin(), false);
 
         final Player player1AfterCreationOfPlayer2 = httpClient.getPlayerByIdSuppressRequestException(firstPlayerId);
-        assertEquals(player1AfterCreationOfPlayer2, createdPlayer1);
+        assertEquals(player1AfterCreationOfPlayer2, createdPlayer1, "Player 1 should not have been changed");
     }
 
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Test that it is impossible to create 2 users with the same screenName.")
     @Test(dataProvider = "twoUsersWithTheSameScreenName", dataProviderClass = TestDataProviders.class,
     description = "Check that 2 users with the same screenName cannot be created")
     public void testThatTwoUsersWithTheSameScreenNameCannotBeCreated(final Player player1,
@@ -138,9 +155,11 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(player2.getLogin(), false);
 
         final Player firstPlayerAfterSecondPlayerCreation = httpClient.getPlayerByIdSuppressRequestException(firstPlayerId);
-        assertEquals(firstPlayerAfterSecondPlayerCreation, firstPlayerAfterCreation);
+        assertEquals(firstPlayerAfterSecondPlayerCreation, firstPlayerAfterCreation,
+                "Player 1 should not have been changed");
     }
 
+    @Description("Test that a user is unable to create a new admin or a supervisor.")
     @Test(dataProvider = "userAndSupervisorThenUserAndAdmin", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot create neither new supervisor nor admin")
     public void testThatUserCannotCreateAdminOrSupervisor(final Player user,

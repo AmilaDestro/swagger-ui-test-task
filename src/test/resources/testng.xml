@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name = "Players Controller Test Suite">
+    <test name = "Player Controller Tests" parallel = "methods" thread-count = "3">
+        <classes>
+            <class name = "org.soloviova.liudmyla.tests.GetAllPlayersEndpointTests"/>
+            <class name = "org.soloviova.liudmyla.tests.GetSinglePlayerEndpointTests"/>
+            <class name = "org.soloviova.liudmyla.tests.CreatePlayerEndpointTests"/>
+            <class name = "org.soloviova.liudmyla.tests.UpdatePlayerControllerTests"/>
+            <class name="org.soloviova.liudmyla.tests.DeletePlayerEndpointTests"/>
+        </classes>
+    </test>
+</suite>

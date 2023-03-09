@@ -1,5 +1,7 @@
 package org.soloviova.liudmyla.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
@@ -16,10 +18,12 @@ import static org.hamcrest.Matchers.notNullValue;
  *
  * @author Liudmyla Soloviova
  */
+@Feature("Delete Player endpoint tests at DELETE /player/delete/{editor}")
 public class DeletePlayerEndpointTests extends PlayerTestBase {
 
+    @Description("Test that the supervisor can delete any admin and any user, an admin can delete any user.")
     @Test(dataProvider = "playersWithEditorRoleForDeletion", dataProviderClass = TestDataProviders.class,
-    description = "Check that the supervisor can delete admins and users, and that an admin can delete users")
+    description = "Check that the supervisor can delete admins and users, and that an admin can delete users.")
     public void testThatAdminCanDeleteUserAndSupervisorCanDeleteBothAdminAndUser(final Player player,
                                                                                  final String editorRole) {
         final String editor = editorRole.equals("admin") ? adminLogin : supervisorLogin;
@@ -40,8 +44,9 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(createdPlayer.getId(), false);
     }
 
+    @Description("Test that one user cannot delete another user, and one admin cannot delete another admin.")
     @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class,
-    description = "Check that one user can't delete another user and one admin can't delete another admin")
+    description = "Check that one user can't delete another user and one admin can't delete another admin.")
     public void testThatOnePlayerWithUserOrAdminRoleCannotDeleteAnotherPlayer(final Player player1,
                                                                               final Player player2) {
         final Player createdPlayer1 = createPlayerSafely(player1, supervisorLogin)
@@ -72,8 +77,9 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(firstPlayerId, true);
     }
 
+    @Description("Test that an admin cannot delete be deleted by him/herself.")
     @Test(dataProvider = "oneAdmin", dataProviderClass = TestDataProviders.class,
-            description = "Check that an admin cannot delete himself")
+            description = "Check that an admin cannot delete himself.")
     public void testThatAdminCannotDeleteHimself(final Player customAdmin) {
         val customAdminId = createPlayerSafely(customAdmin, supervisorLogin)
                 .then()
@@ -91,7 +97,8 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(customAdminId, true);
     }
 
-    @Test(description = "Check that the supervisor cannot be deleted by admins")
+    @Description("Test that the supervisor cannot be deleted by any admin.")
+    @Test(description = "Check that the supervisor cannot be deleted by admins.")
     public void testThatSupervisorCannotBeDeletedByAdmin() {
         httpClient.deletePlayer(supervisorId, adminLogin)
                 .then()
@@ -100,7 +107,8 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(supervisorId, true);
     }
 
-    @Test(description = "Check that the supervisor cannot be deleted by himself")
+    @Description("Test that the supervisor cannot be deleted by himself.")
+    @Test(description = "Check that the supervisor cannot be deleted by himself.")
     public void testThatSupervisorCannotBeDeletedByHimself() {
         httpClient.deletePlayer(supervisorId, supervisorLogin)
                 .then()
@@ -109,6 +117,7 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(supervisorId, true);
     }
 
+    @Description("Test that a user cannot be deleted by him/herself.")
     @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot delete himself")
     public void testThatUserCannotDeleteHimself(final Player user) {
@@ -128,9 +137,11 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(userId, true);
     }
 
-    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
-    description = "Check that a user cannot delete admins")
-    public void testThatUserCannotDeleteAdmin(final Player user) {
+    @Description("Test that a user cannot delete an admin.")
+    @Test(dataProvider = "userAndAdmin", dataProviderClass = TestDataProviders.class,
+    description = "Check that a user cannot delete admins.")
+    public void testThatUserCannotDeleteAdmin(final Player user,
+                                              final Player admin) {
         val userId = createPlayerSafely(user, adminLogin)
                 .then()
                 .statusCode(in(List.of(200, 201)))
@@ -141,16 +152,25 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
                 .getId();
         checkIfPlayerIsAvailableInAllPlayersList(userId, true);
 
-        val adminId = getPlayerIdByLogin(adminLogin);
+        val adminId = createPlayerSafely(admin, supervisorLogin)
+                .then()
+                .statusCode(in(List.of(200, 201)))
+                .contentType(ContentType.JSON)
+                .body("id", notNullValue())
+                .extract()
+                .as(Player.class)
+                .getId();
+        checkIfPlayerIsAvailableInAllPlayersList(adminId, true);
+
         deletePlayerSafely(adminId, user.getLogin())
                 .then()
                 .statusCode(403);
-
         checkIfPlayerIsAvailableInAllPlayersList(adminId, true);
     }
 
+    @Description("Test that a user cannot delete the supervisor.")
     @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
-    description = "Check that a user cannot delete the supervisor")
+    description = "Check that a user cannot delete the supervisor.")
     public void testThatUserCannotDeleteSupervisor(final Player user) {
         val userId = createPlayerSafely(user, supervisorLogin)
                 .then()

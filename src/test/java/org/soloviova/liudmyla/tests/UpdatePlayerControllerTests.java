@@ -1,5 +1,7 @@
 package org.soloviova.liudmyla.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Feature;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
@@ -19,10 +21,12 @@ import static org.testng.Assert.assertNotEquals;
  *
  * @author Liudmyla Soloviova
  */
+@Feature("Update Player endpoint tests at PATCH /player/update/{editor}/{id}")
 public class UpdatePlayerControllerTests extends PlayerTestBase {
 
+    @Description("Test that the supervisor can edit users and admins.")
     @Test(dataProvider = "userThenAdminPlayers", dataProviderClass = TestDataProviders.class,
-            description = "Check that the supervisor can edit users and admins")
+            description = "Check that the supervisor can edit users and admins.")
     public void testThatSupervisorCanEditPlayerWithAdminAndUserRoles(final Player player) {
         val playerId = createPlayerSafely(player, supervisorLogin)
                 .then()
@@ -64,7 +68,8 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
                 "Player's screenName was not properly changed");
     }
 
-    @Test(description = "Check that the supervisor can update himself")
+    @Description("Test that the supervisor can update himself.")
+    @Test(description = "Check that the supervisor can update himself.")
     public void testThatSupervisorCanUpdateHimself() {
         val supervisorId = getPlayerIdByLogin(supervisorLogin);
         val supervisorBeforeUpdate = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
@@ -87,6 +92,7 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertNotEquals(updatedSupervisor, supervisorBeforeUpdate, "Supervisor was not changed");
     }
 
+    @Description("Test that an admin can update users.")
     @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
             description = "Check that an admin can update users")
     public void testThatAdminCanUpdateUsers(final Player user) {
@@ -121,8 +127,9 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertNotEquals(updatedUser, userBeforeUpdate, "User was not changed");
     }
 
+    @Description("Test that an admin can update himself and a user can update himself.")
     @Test(dataProvider = "userThenAdminPlayers", dataProviderClass = TestDataProviders.class,
-            description = "Check that an admin can update himself and a user can update himself")
+            description = "Check that an admin can update himself and a user can update himself.")
     public void testThatAdminCanUpdateHimselfAndUserCanUpdateHimself(final Player player) {
         val playerId = createPlayerSafely(player, supervisorLogin)
                 .then()
@@ -166,8 +173,9 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertNotEquals(playerAfterUpdate, playerAfterCreation, "Player was not updated");
     }
 
+    @Description("Test that a user cannot update other users and an admin cannot update other admins.")
     @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class,
-            description = "Check that a user cannot update other users and an admin cannot update other admins")
+            description = "Check that a user cannot update other users and an admin cannot update other admins.")
     public void testThatUserCannotUpdateOtherUsersAndAdminCannotUpdateOtherAdmins(final Player player1,
                                                                                   final Player player2) {
         val playerId1 = createPlayerSafely(player1, adminLogin)
@@ -202,7 +210,8 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
                 "Player 1 should not have been updated");
     }
 
-    @Test(description = "Check that an admin cannot update the supervisor")
+    @Description("Test that an admin cannot update the supervisor.")
+    @Test(description = "Check that an admin cannot update the supervisor.")
     public void testThatAdminCannotUpdateSupervisor() {
         val supervisor = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
         val toUpdate = Player.builder()
@@ -218,9 +227,11 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertEquals(supervisorAfterUpdate, supervisor, "Supervisor should not have been updated");
     }
 
-    @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
-    description = "Check that a user cannot update admins")
-    public void testThatUserCannotUpdateAdmin(final Player user) {
+    @Description("Test that a user cannot update admins.")
+    @Test(dataProvider = "userAndAdmin", dataProviderClass = TestDataProviders.class,
+    description = "Check that a user cannot update admins.")
+    public void testThatUserCannotUpdateAdmin(final Player user,
+                                              final Player admin) {
         val userId = createPlayerSafely(user, supervisorLogin)
                 .then()
                 .statusCode(in(List.of(200, 201)))
@@ -231,8 +242,17 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
                 .getId();
         checkIfPlayerIsAvailableInAllPlayersList(userId, true);
 
-        val adminId = getPlayerIdByLogin(adminLogin);
-        val admin = httpClient.getPlayerByIdSuppressRequestException(adminId);
+        val adminId = createPlayerSafely(admin, supervisorLogin)
+                .then()
+                .statusCode(in(List.of(200, 201)))
+                .contentType(ContentType.JSON)
+                .body("id", notNullValue())
+                .extract()
+                .as(Player.class)
+                .getId();
+        checkIfPlayerIsAvailableInAllPlayersList(adminId, true);
+
+        val adminAfterCreation = httpClient.getPlayerByIdSuppressRequestException(adminId);
         val toUpdate = Player.builder()
                 .screenName(admin.getScreenName().toUpperCase() + "_UPD")
                 .build();
@@ -240,12 +260,14 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         httpClient.updatePlayer(adminId, user.getLogin(), toUpdate)
                 .then()
                 .statusCode(403);
+
         val adminAfterUpdate = httpClient.getPlayerByIdSuppressRequestException(adminId);
-        assertEquals(adminAfterUpdate, admin, "Admin should not have been updated");
+        assertEquals(adminAfterUpdate, adminAfterCreation, "Admin should not have been updated");
     }
 
+    @Description("Test that a user cannot update the supervisor.")
     @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
-    description = "Check that a user cannot update the supervisor")
+    description = "Check that a user cannot update the supervisor.")
     public void testThatUserCannotUpdateSupervisor(final Player user) {
         val userId = createPlayerSafely(user, supervisorLogin)
                 .then()

@@ -42,7 +42,7 @@ public class PlayerControllerHttpClient {
         return playerControllerClient;
     }
 
-    public synchronized Response getAllPlayers() {
+    public Response getAllPlayers() {
         log.info("Getting list of all registered users");
         final Response response = given().baseUri(GET_ALL_PLAYERS_URL).when().get();
         log.info("Obtained response: {}", response.asPrettyString());
@@ -50,7 +50,7 @@ public class PlayerControllerHttpClient {
         return response;
     }
 
-    public synchronized List<PlayerItem> getAllPlayersSuppressRequestException() {
+    public List<PlayerItem> getAllPlayersSuppressRequestException() {
         try {
             return getAllPlayers()
                     .then()
@@ -63,7 +63,7 @@ public class PlayerControllerHttpClient {
         }
     }
 
-    public synchronized Response getPlayerById(final Integer playerId) {
+    public Response getPlayerById(final Integer playerId) {
         log.info("Getting a Player with id {}", playerId);
         final PlayerIdItem playerIdItem = new PlayerIdItem(playerId);
 
@@ -77,7 +77,7 @@ public class PlayerControllerHttpClient {
         return response;
     }
 
-    public synchronized Player getPlayerByIdSuppressRequestException(final Integer playerId) {
+    public Player getPlayerByIdSuppressRequestException(final Integer playerId) {
         try {
             return getPlayerById(playerId).then().extract().as(Player.class);
         } catch (Exception e) {

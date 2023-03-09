@@ -7,9 +7,8 @@ import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
 import org.soloviova.liudmyla.entities.PlayerItem;
 import org.soloviova.liudmyla.httpclients.PlayerControllerHttpClient;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,34 +26,31 @@ import static org.testng.Assert.assertEquals;
  */
 @Slf4j
 public abstract class PlayerTestBase {
-    protected final List<Integer> playersToDelete;
-    protected final PlayerControllerHttpClient httpClient;
-    protected final String supervisorLogin;
+    protected final List<Integer> playersToDelete = new ArrayList<>();
+    protected final String supervisorLogin = "supervisor";
     protected final Integer supervisorId;
-    protected String adminLogin;
+    protected final String adminLogin = "testAdmin1";
     private final Player defaultSupervisorCondition;
+    protected final PlayerControllerHttpClient httpClient;
 
     PlayerTestBase() {
-        httpClient = PlayerControllerHttpClient.getInstance();
-        supervisorLogin = "supervisor";
-        supervisorId = getPlayerIdByLogin(supervisorLogin);
-        playersToDelete = new ArrayList<>();
-        defaultSupervisorCondition = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
+        synchronized (this) {
+            httpClient = PlayerControllerHttpClient.getInstance();
+            supervisorId = getPlayerIdByLogin(supervisorLogin);
+            defaultSupervisorCondition = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
+        }
     }
 
-    @BeforeClass
-    public void setupBeforeAllTests() {
+    @BeforeSuite(alwaysRun = true)
+    public synchronized void setupBeforeAllTests() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        createTestAdminIfNotExists();
     }
 
-    @BeforeMethod
-    public void setupBeforeEachTest() {
-        createTestAdmin();
-    }
-
-    @AfterMethod
-    public void cleanUpAfterEachTest() {
+    @AfterSuite(alwaysRun = true)
+    public synchronized void cleanUpAfterTests() {
         deleteCreatedPlayers();
+        deleteTestAdmin();
         restoreSupervisorData();
     }
 
@@ -66,12 +62,15 @@ public abstract class PlayerTestBase {
      * @param editor login of a user who is going to create the new player
      * @return {@link Response} obtained after execution of the HTTP request
      */
-    protected Response createPlayerSafely(final Player player, final String editor) {
+    protected synchronized Response createPlayerSafely(final Player player, final String editor) {
         final Response response = httpClient.createPlayer(player, editor);
-        if (isStatusCodeOk(response)) {
-            Player createdPlayer = response.as(Player.class);
-            playersToDelete.add(createdPlayer.getId());
-        }
+        val playerLogin = player.getLogin();
+        checkIfPlayerIsAvailableInAllPlayersList(playerLogin, true);
+
+        val playerId = getPlayerIdByLogin(playerLogin);
+        playersToDelete.add(playerId);
+        log.info("Player with id {} and login {} was safely created and prepared for deletion", playerId, playerLogin);
+
         return response;
     }
 
@@ -83,27 +82,38 @@ public abstract class PlayerTestBase {
      * @param editor   login of a user who is going to delete the player
      * @return {@link Response} obtained after execution of the HTTP request
      */
-    protected Response deletePlayerSafely(final Integer playerId, final String editor) {
+    protected synchronized Response deletePlayerSafely(final Integer playerId, final String editor) {
         log.info("Performing safe delete of Player {}", playerId);
-        Optional<Integer> playerIdIsPreparedForDeletion = playersToDelete.stream()
-                .filter(id -> Objects.equals(id, playerId))
-                .findFirst();
-        Response response = httpClient.deletePlayer(playerId, editor);
+//        Optional<Integer> playerIdIsPreparedForDeletion = playersToDelete.stream()
+//                .filter(id -> Objects.equals(id, playerId))
+//                .findFirst();
 
-        if (playerIdIsPreparedForDeletion.isPresent() && isStatusCodeOk(response)) {
+        Response response = httpClient.deletePlayer(playerId, editor);
+        checkIfPlayerIsAvailableInAllPlayersList(playerId, false);
+
+//        if (playerIdIsPreparedForDeletion.isPresent() && isStatusCodeOk(response)) {
             playersToDelete.remove(playerId);
-        }
+            log.info("Player with id {} was deleted safely", playerId);
+//        }
         return response;
     }
 
+    /**
+     * Gets login for a Player with the given id
+     *
+     * @param playerId - id of the Player
+     * @return found player's login as {@link String}
+     */
     protected String getPlayerLogin(final Integer playerId) {
         return httpClient.getPlayerByIdSuppressRequestException(playerId).getLogin();
     }
 
-    protected String getAdminLogin() {
-        return getPlayerLogin(getPlayerItemWithRole("admin").getId());
-    }
-
+    /**
+     * Gets id of a Player with the given login
+     *
+     * @param playerLogin - login of the Player
+     * @return id of the Player
+     */
     protected Integer getPlayerIdByLogin(final String playerLogin) {
         val player = httpClient.getAllPlayersSuppressRequestException()
                 .stream()
@@ -115,9 +125,9 @@ public abstract class PlayerTestBase {
     }
 
     /**
-     * Checks whether specified Player is available in all players list by id
+     * Checks whether specified Player is available in all players list by id and compares the result with expected one
      *
-     * @param playerId     {@link Player} which is being checked
+     * @param playerId          id of the Player which is being checked
      * @param shouldBeAvailable boolean parameter which indicates whether the specified player is expected to be
      *                          available in all players list
      */
@@ -126,11 +136,24 @@ public abstract class PlayerTestBase {
         assertEquals(createdPlayerIsFoundAmongTheListOfAllPlayerItems(playerId), shouldBeAvailable);
     }
 
+    /**
+     * Checks whether specified Player is available in all players list by id and compares the result with expected one
+     *
+     * @param playerLogin       login of the Player which is being checked
+     * @param shouldBeAvailable boolean parameter which indicates whether the specified player is expected to be
+     *                          available in all players list
+     */
     protected void checkIfPlayerIsAvailableInAllPlayersList(final String playerLogin,
                                                             final boolean shouldBeAvailable) {
         assertEquals(createdPlayerIsFoundAmongTheListOfAllPlayerItems(playerLogin), shouldBeAvailable);
     }
 
+    /**
+     * Checks whether specified Player is available in all players list by id
+     *
+     * @param playerId - id of the Player which is being checked
+     * @return {@link Boolean} result of the check
+     */
     private boolean createdPlayerIsFoundAmongTheListOfAllPlayerItems(final Integer playerId) {
         log.info("Checking if Player with id {} can be found among the list of all PlayerItems", playerId);
         Optional<PlayerItem> isPlayerItemFound = httpClient.getAllPlayersSuppressRequestException()
@@ -140,6 +163,12 @@ public abstract class PlayerTestBase {
         return isPlayerItemFound.isPresent();
     }
 
+    /**
+     * Checks whether specified Player is available in all players list by login
+     *
+     * @param playerLogin - login of the Player which is being checked
+     * @return {@link Boolean} result of the check
+     */
     private boolean createdPlayerIsFoundAmongTheListOfAllPlayerItems(final String playerLogin) {
         log.info("Checking if Player with login {} can be found among the list of all PlayerItems", playerLogin);
         Optional<PlayerItem> isPlayerItemFound = httpClient.getAllPlayersSuppressRequestException()
@@ -149,20 +178,37 @@ public abstract class PlayerTestBase {
         return isPlayerItemFound.isPresent();
     }
 
-    private void deleteCreatedPlayers() {
-        log.info("Deleting created players during testing");
+    /**
+     * Deletes only those Players that were created in tests
+     */
+    private synchronized void deleteCreatedPlayers() {
+        log.info("Deleting created players during testing: {}", playersToDelete);
 
-        playersToDelete.forEach(playerId -> httpClient.deletePlayer(playerId, "supervisor"));
-        playersToDelete.clear();
+        playersToDelete.forEach(playerId -> {
+            deletePlayerSafely(playerId, supervisorLogin);
+            checkIfPlayerIsAvailableInAllPlayersList(playerId, false);
+        });
 
         log.info("Players list is clear");
     }
 
+    /**
+     * Checks if http request was executed successfully
+     *
+     * @param response {@link Response} that was obtained after the request rexecution
+     * @return {@link Boolean} result of the check
+     */
     private boolean isStatusCodeOk(final Response response) {
         final int statusCode = response.getStatusCode();
         return statusCode >= 200 && statusCode < 205;
     }
 
+    /**
+     * Looks for a Player with specified role among list of all players
+     *
+     * @param role - role of the Player to find
+     * @return found Player entity as {@link PlayerItem}
+     */
     private PlayerItem getPlayerItemWithRole(final String role) {
         return httpClient.getAllPlayersSuppressRequestException()
                 .stream()
@@ -172,26 +218,44 @@ public abstract class PlayerTestBase {
                 .orElseThrow(() -> new AssertionError(format("Player with role [%s]] was not found", role)));
     }
 
-    private void createTestAdmin() {
-        final Player adminToCreate = Player.builder()
-                .role("admin")
-                .screenName("Test_Admin_1")
-                .login("testAdmin1")
-                .password("vbrhei40fn8")
-                .gender("female")
-                .age(27)
-                .build();
+    /**
+     * Creates custom admin to be used in tests
+     */
+    private synchronized void createTestAdminIfNotExists() {
+        if (!doesTestAdminExist()) {
+            final Player adminToCreate = Player.builder()
+                    .role("admin")
+                    .screenName("Test_Admin_1")
+                    .login(adminLogin)
+                    .password("vbrhei40fn8")
+                    .gender("female")
+                    .age(27)
+                    .build();
 
-        log.info("Creating admin user for tests: {}", adminToCreate);
-        val response = createPlayerSafely(adminToCreate, "supervisor");
-        adminLogin = isStatusCodeOk(response) ? "testAdmin1" : getAdminLogin();
+            log.info("Creating admin user for tests: {}", adminToCreate);
+            httpClient.createPlayer(adminToCreate, supervisorLogin);
+        }
     }
 
-    private void restoreSupervisorData() {
+    /**
+     * Restores fields values for the supervisor in case if any data was changed during testing
+     */
+    private synchronized void restoreSupervisorData() {
         val id = getPlayerIdByLogin(supervisorLogin);
         val supervisorAfterTests = httpClient.getPlayerByIdSuppressRequestException(id);
         if (!supervisorAfterTests.equals(defaultSupervisorCondition)) {
             httpClient.updatePlayer(id, supervisorLogin, defaultSupervisorCondition);
         }
+    }
+
+    private synchronized void deleteTestAdmin() {
+        if(doesTestAdminExist()) {
+            val testAdminId = getPlayerIdByLogin(adminLogin);
+            httpClient.deletePlayer(testAdminId, supervisorLogin);
+        }
+    }
+
+    private boolean doesTestAdminExist() {
+        return createdPlayerIsFoundAmongTheListOfAllPlayerItems(adminLogin);
     }
 }

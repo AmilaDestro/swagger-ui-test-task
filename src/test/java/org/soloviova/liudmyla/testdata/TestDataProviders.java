@@ -3,6 +3,8 @@ package org.soloviova.liudmyla.testdata;
 import org.soloviova.liudmyla.entities.Player;
 import org.testng.annotations.DataProvider;
 
+import java.util.UUID;
+
 public class TestDataProviders {
 
     @DataProvider
@@ -27,9 +29,9 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                     Player.builder()
-                            .login("Adventurer")
+                            .login(generateRandomString("Adventurer"))
                             .password("VyqvTtY736JJSD")
-                            .screenName("Alice Ashcroft")
+                            .screenName(generateRandomString("Alice Ashcroft"))
                             .gender("female")
                             .age(24)
                             .role("user")
@@ -38,9 +40,9 @@ public class TestDataProviders {
                 },
                 {
                         Player.builder()
-                                .login("thomas_birne")
+                                .login(generateRandomString("thomas_birne"))
                                 .password("uTCcvjew64ejd3")
-                                .screenName("Tom Birne")
+                                .screenName(generateRandomString("Tom Birne"))
                                 .gender("male")
                                 .age(29)
                                 .role("admin")
@@ -49,9 +51,9 @@ public class TestDataProviders {
                 },
                 {
                         Player.builder()
-                                .login("Starkiller99")
+                                .login(generateRandomString("Starkiller99"))
                                 .password("nnjcei2gc")
-                                .screenName("Neil_Starkiller")
+                                .screenName(generateRandomString("Neil_Starkiller"))
                                 .gender("male")
                                 .age(23)
                                 .role("user")
@@ -60,9 +62,9 @@ public class TestDataProviders {
                 },
                 {
                         Player.builder()
-                                .login("hanna_epic")
+                                .login(generateRandomString("hanna_epic"))
                                 .password("Bhcuweyyvxcuq")
-                                .screenName("Johanna_The_One")
+                                .screenName(generateRandomString("Johanna_The_One"))
                                 .gender("female")
                                 .age(28)
                                 .role("admin")
@@ -80,9 +82,9 @@ public class TestDataProviders {
                         .age(31)
                         .role("user")
                         .gender("male")
-                        .login("mr_smith")
+                        .login(generateRandomString("mr_smith"))
                         .password("Password0123")
-                        .screenName("John_Smith")
+                        .screenName(generateRandomString("John_Smith"))
                         .build(),
                         "admin"
                 },
@@ -91,9 +93,9 @@ public class TestDataProviders {
                                 .age(30)
                                 .role("admin")
                                 .gender("female")
-                                .login("jane_smith")
+                                .login(generateRandomString("jane_smith"))
                                 .password("1Passw0rd567")
-                                .screenName("Jane_Smith")
+                                .screenName(generateRandomString("Jane_Smith"))
                                 .build(),
                         "supervisor"
                 },
@@ -102,9 +104,9 @@ public class TestDataProviders {
                                 .age(27)
                                 .role("user")
                                 .gender("male")
-                                .login("alex_smith")
+                                .login(generateRandomString("alex_smith"))
                                 .password("qwert09Password0123")
-                                .screenName("AleXSmith")
+                                .screenName(generateRandomString("AleXSmith"))
                                 .build(),
                         "supervisor"
                 }
@@ -117,19 +119,19 @@ public class TestDataProviders {
                 {
                         Player.builder()
                                 .login("bob1997")
-                                .password("bgheyurg6HW&")
+                                .password(generateRandomString("bgheyurg6HW&"))
                                 .age(25)
                                 .role("user")
                                 .gender("male")
-                                .screenName("BobRoberts")
+                                .screenName(generateRandomString("BobRoberts"))
                                 .build(),
                         Player.builder()
-                                .login("alan_morgan")
+                                .login(generateRandomString("alan_morgan"))
                                 .password("9gnutUtfv")
                                 .age(27)
                                 .role("user")
                                 .gender("male")
-                                .screenName("Alan_Morgan")
+                                .screenName(generateRandomString("Alan_Morgan"))
                                 .build()
                 }
         };
@@ -140,9 +142,9 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                     Player.builder()
-                            .login("anonym_user2010")
+                            .login(generateRandomString("anonym_user2010"))
                             .password("fbrhwuui2")
-                            .screenName("Anonymus_10")
+                            .screenName(generateRandomString("Anonymus_10"))
                             .age(12)
                             .role("user")
                             .gender("male")
@@ -150,9 +152,9 @@ public class TestDataProviders {
                 },
                 {
                     Player.builder()
-                            .login("jane_doe")
+                            .login(generateRandomString("jane_doe"))
                             .password("qwertyuiop10")
-                            .screenName("Jane_Doe_player")
+                            .screenName(generateRandomString("Jane_Doe_player"))
                             .age(62)
                             .gender("female")
                             .role("user")
@@ -214,17 +216,17 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                     Player.builder()
-                            .login("oliver89")
+                            .login(generateRandomString("oliver89"))
                             .password("YUBbhydg54d91")
-                            .screenName("Oliver_Ryd")
+                            .screenName(generateRandomString("Oliver_Ryd"))
                             .gender("male")
                             .age(34)
                             .role("user")
                             .build(),
                         Player.builder()
-                                .login("james_frost")
+                                .login(generateRandomString("james_frost"))
                                 .password("nvbui4u74")
-                                .screenName("James Frost")
+                                .screenName(generateRandomString("James Frost"))
                                 .gender("male")
                                 .age(37)
                                 .role("user")
@@ -232,17 +234,17 @@ public class TestDataProviders {
                 },
                 {
                         Player.builder()
-                                .login("HelenaJ")
+                                .login(generateRandomString("HelenaJ"))
                                 .password("bfur728ffbul")
-                                .screenName("Helena_Jones")
+                                .screenName(generateRandomString("Helena_Jones"))
                                 .gender("female")
                                 .age(25)
                                 .role("admin")
                                 .build(),
                         Player.builder()
-                                .login("emilia_the_player")
+                                .login(generateRandomString("emilia_the_player"))
                                 .password("vn43n8G&GFf")
-                                .screenName("Emilia_Holmes")
+                                .screenName(generateRandomString("Emilia_Holmes"))
                                 .gender("female")
                                 .age(33)
                                 .role("admin")
@@ -256,8 +258,8 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                         Player.builder()
-                                .login("richard_bloom")
-                                .screenName("Richard_Bloom_Jr")
+                                .login(generateRandomString("richard_bloom"))
+                                .screenName(generateRandomString("Richard_Bloom_Jr"))
                                 .password("bcry4748ch")
                                 .age(34)
                                 .gender("male")
@@ -272,8 +274,8 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                     Player.builder()
-                            .login("john_doe")
-                            .screenName("John Doe")
+                            .login(generateRandomString("john_doe"))
+                            .screenName(generateRandomString("John Doe"))
                             .password("vbervy3747bvvevn")
                             .age(32)
                             .gender("male")
@@ -282,8 +284,8 @@ public class TestDataProviders {
                 },
                 {
                         Player.builder()
-                                .login("olivia_willson")
-                                .screenName("Olivia_W")
+                                .login(generateRandomString("olivia_willson"))
+                                .screenName(generateRandomString("Olivia_W"))
                                 .password("bu3r4buf34")
                                 .age(29)
                                 .gender("female")
@@ -298,9 +300,9 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                         Player.builder()
-                                .login("super_admin")
+                                .login(generateRandomString("super_admin"))
                                 .password("BBUd6426fg28")
-                                .screenName("SuperAdmin")
+                                .screenName(generateRandomString("SuperAdmin"))
                                 .role("admin")
                                 .gender("male")
                                 .age(40)
@@ -314,10 +316,10 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                         Player.builder()
-                                .screenName("Supervisor_sister")
+                                .screenName(generateRandomString("Supervisor_sister"))
                                 .age(34)
                                 .gender("female")
-                                .login("anotherSupervisor")
+                                .login(generateRandomString("anotherSupervisor"))
                                 .password("QwertY987")
                                 .role("supervisor")
                                 .build()
@@ -330,40 +332,68 @@ public class TestDataProviders {
         return new Object[][] {
                 {
                     Player.builder()
-                            .login("chrome_user")
+                            .login(generateRandomString("chrome_user"))
                             .password("vtde2fd")
-                            .screenName("Lucky_Player")
+                            .screenName(generateRandomString("Lucky_Player"))
                             .age(30)
                             .gender("female")
                             .role("user")
                             .build(),
                         Player.builder()
-                                .screenName("SuperSTAR")
+                                .screenName(generateRandomString("SuperSTAR"))
                                 .age(30)
                                 .gender("female")
-                                .login("StarSupervisor")
+                                .login(generateRandomString("StarSupervisor"))
                                 .password("Byde2gd74")
                                 .role("supervisor")
                                 .build()
                 },
                 {
                         Player.builder()
-                                .login("unknown_user")
+                                .login(generateRandomString("unknown_user"))
                                 .password("VEvnji5u")
-                                .screenName("UNKNOWN")
+                                .screenName(generateRandomString("UNKNOWN"))
                                 .age(35)
                                 .gender("male")
                                 .role("user")
                                 .build(),
                         Player.builder()
-                                .screenName("molly_cooper")
+                                .screenName(generateRandomString("molly_cooper"))
                                 .age(26)
                                 .gender("female")
-                                .login("SweetMolly")
+                                .login(generateRandomString("SweetMolly"))
                                 .password("vn3igu5")
                                 .role("admin")
                                 .build()
                 }
         };
+    }
+
+    @DataProvider
+    public static Object[][] userAndAdmin() {
+        return new Object[][] {
+                {
+                        Player.builder()
+                                .login(generateRandomString("eric_user"))
+                                .password("VEvnji5u")
+                                .screenName(generateRandomString("EricAnders"))
+                                .age(32)
+                                .gender("male")
+                                .role("user")
+                                .build(),
+                        Player.builder()
+                                .screenName(generateRandomString("JillEpic"))
+                                .age(28)
+                                .gender("female")
+                                .login(generateRandomString("jillian_epic_girl"))
+                                .password("vn3igu5")
+                                .role("admin")
+                                .build()
+                }
+        };
+    }
+
+    private static String generateRandomString(final String substring) {
+        return String.format("%s_%s", substring, UUID.randomUUID());
     }
 }
