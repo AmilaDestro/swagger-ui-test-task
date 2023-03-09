@@ -1,13 +1,12 @@
 package org.soloviova.liudmyla.testdata;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.soloviova.liudmyla.entities.Player;
 import org.testng.annotations.DataProvider;
 
-import java.util.UUID;
-
 public class TestDataProviders {
 
-    @DataProvider
+    @DataProvider(parallel = true)
     private static Object[][] wrongUrisForGetAllPlayers() {
         return new Object[][]{
                 {"/get/all-players"},
@@ -15,7 +14,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] wrongPlayerIds() {
         return new Object[][]{
                 {0},
@@ -24,7 +23,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] playersWithEditorRoleForCreation() {
         return new Object[][] {
                 {
@@ -74,7 +73,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] playersWithEditorRoleForDeletion() {
         return new Object[][]{
                 {
@@ -113,7 +112,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] twoUsersToCreateOneByOne() {
         return new Object[][]{
                 {
@@ -137,7 +136,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] usersBeyondAllowedAge() {
         return new Object[][] {
                 {
@@ -163,7 +162,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] twoUsersWithTheSameLogin() {
         return new Object[][] {
                 {
@@ -187,7 +186,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] twoUsersWithTheSameScreenName() {
         return new Object[][] {
                 {
@@ -211,7 +210,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] twoDifferentPlayers() {
         return new Object[][] {
                 {
@@ -253,7 +252,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] oneUser() {
         return new Object[][] {
                 {
@@ -269,7 +268,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] userThenAdminPlayers() {
         return new Object[][] {
                 {
@@ -295,7 +294,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] oneAdmin() {
         return new Object[][] {
                 {
@@ -311,7 +310,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] customSupervisor() {
         return new Object[][] {
                 {
@@ -327,7 +326,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] userAndSupervisorThenUserAndAdmin() {
         return new Object[][] {
                 {
@@ -369,7 +368,7 @@ public class TestDataProviders {
         };
     }
 
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] userAndAdmin() {
         return new Object[][] {
                 {
@@ -394,6 +393,6 @@ public class TestDataProviders {
     }
 
     private static String generateRandomString(final String substring) {
-        return String.format("%s_%s", substring, UUID.randomUUID());
+        return String.format("%s_%s", substring, RandomStringUtils.randomAlphabetic(7));
     }
 }

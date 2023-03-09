@@ -2,6 +2,8 @@ package org.soloviova.liudmyla.tests;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
@@ -44,6 +46,7 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(createdPlayer.getId(), false);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that one user cannot delete another user, and one admin cannot delete another admin.")
     @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class,
     description = "Check that one user can't delete another user and one admin can't delete another admin.")
@@ -77,6 +80,7 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(firstPlayerId, true);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that an admin cannot delete be deleted by him/herself.")
     @Test(dataProvider = "oneAdmin", dataProviderClass = TestDataProviders.class,
             description = "Check that an admin cannot delete himself.")
@@ -117,6 +121,7 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(supervisorId, true);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that a user cannot be deleted by him/herself.")
     @Test(dataProvider = "oneUser", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot delete himself")
@@ -137,6 +142,7 @@ public class DeletePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(userId, true);
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that a user cannot delete an admin.")
     @Test(dataProvider = "userAndAdmin", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot delete admins.")

@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
-<suite name = "Players Controller Test Suite">
-    <test name = "Player Controller Tests" parallel = "methods" thread-count = "3">
+<suite name = "Players Controller Test Suite" parallel="classes" thread-count="3" data-provider-thread-count="3">
+    <test name = "Player Controller Tests">
         <classes>
             <class name = "org.soloviova.liudmyla.tests.GetAllPlayersEndpointTests"/>
             <class name = "org.soloviova.liudmyla.tests.GetSinglePlayerEndpointTests"/>

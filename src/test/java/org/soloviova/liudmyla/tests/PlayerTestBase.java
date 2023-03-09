@@ -10,10 +10,10 @@ import org.soloviova.liudmyla.httpclients.PlayerControllerHttpClient;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.testng.Assert.assertEquals;
@@ -26,20 +26,19 @@ import static org.testng.Assert.assertEquals;
  */
 @Slf4j
 public abstract class PlayerTestBase {
-    protected final List<Integer> playersToDelete = new ArrayList<>();
-    protected final String supervisorLogin = "supervisor";
-    protected final Integer supervisorId;
-    protected final String adminLogin = "testAdmin1";
-    private final Player defaultSupervisorCondition;
-    protected final PlayerControllerHttpClient httpClient;
-
-    PlayerTestBase() {
-        synchronized (this) {
-            httpClient = PlayerControllerHttpClient.getInstance();
-            supervisorId = getPlayerIdByLogin(supervisorLogin);
-            defaultSupervisorCondition = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
-        }
-    }
+    public static final String supervisorLogin = "supervisor";
+    public static final String adminLogin = "testAdmin1";
+    public static final PlayerControllerHttpClient httpClient = PlayerControllerHttpClient.getInstance();
+    public static final Integer supervisorId = 1;
+    private final Player defaultSupervisorCondition = Player.builder()
+            .id(1)
+            .login(supervisorLogin)
+            .screenName(supervisorLogin)
+            .age(28)
+            .role("supervisor")
+            .gender("male")
+            .build();
+    private static final String CREATED_BY_TESTS = " [CREATED_BY_TESTS]";
 
     @BeforeSuite(alwaysRun = true)
     public synchronized void setupBeforeAllTests() {
@@ -63,13 +62,16 @@ public abstract class PlayerTestBase {
      * @return {@link Response} obtained after execution of the HTTP request
      */
     protected synchronized Response createPlayerSafely(final Player player, final String editor) {
+        player.setScreenName(player.getScreenName() + CREATED_BY_TESTS);
+
+        log.info("Safe creation of Player: {}", player);
+
         final Response response = httpClient.createPlayer(player, editor);
         val playerLogin = player.getLogin();
-        checkIfPlayerIsAvailableInAllPlayersList(playerLogin, true);
 
-        val playerId = getPlayerIdByLogin(playerLogin);
-        playersToDelete.add(playerId);
-        log.info("Player with id {} and login {} was safely created and prepared for deletion", playerId, playerLogin);
+        if (isStatusCodeOk(response)) {
+            checkIfPlayerIsAvailableInAllPlayersList(playerLogin, true);
+        }
 
         return response;
     }
@@ -84,17 +86,15 @@ public abstract class PlayerTestBase {
      */
     protected synchronized Response deletePlayerSafely(final Integer playerId, final String editor) {
         log.info("Performing safe delete of Player {}", playerId);
-//        Optional<Integer> playerIdIsPreparedForDeletion = playersToDelete.stream()
-//                .filter(id -> Objects.equals(id, playerId))
-//                .findFirst();
 
         Response response = httpClient.deletePlayer(playerId, editor);
-        checkIfPlayerIsAvailableInAllPlayersList(playerId, false);
 
-//        if (playerIdIsPreparedForDeletion.isPresent() && isStatusCodeOk(response)) {
-            playersToDelete.remove(playerId);
-            log.info("Player with id {} was deleted safely", playerId);
-//        }
+        if (isStatusCodeOk(response)) {
+            checkIfPlayerIsAvailableInAllPlayersList(playerId, false);
+        }
+
+        log.info("Player with id {} was deleted safely", playerId);
+
         return response;
     }
 
@@ -182,14 +182,14 @@ public abstract class PlayerTestBase {
      * Deletes only those Players that were created in tests
      */
     private synchronized void deleteCreatedPlayers() {
+        final List<PlayerItem> playersToDelete = httpClient.getAllPlayersSuppressRequestException()
+                .stream()
+                .filter(playerItem -> playerItem.getScreenName().contains(CREATED_BY_TESTS))
+                .collect(Collectors.toList());
+
         log.info("Deleting created players during testing: {}", playersToDelete);
 
-        playersToDelete.forEach(playerId -> {
-            deletePlayerSafely(playerId, supervisorLogin);
-            checkIfPlayerIsAvailableInAllPlayersList(playerId, false);
-        });
-
-        log.info("Players list is clear");
+        playersToDelete.forEach(playerItem -> deletePlayerSafely(playerItem.getId(), supervisorLogin));
     }
 
     /**
@@ -201,21 +201,6 @@ public abstract class PlayerTestBase {
     private boolean isStatusCodeOk(final Response response) {
         final int statusCode = response.getStatusCode();
         return statusCode >= 200 && statusCode < 205;
-    }
-
-    /**
-     * Looks for a Player with specified role among list of all players
-     *
-     * @param role - role of the Player to find
-     * @return found Player entity as {@link PlayerItem}
-     */
-    private PlayerItem getPlayerItemWithRole(final String role) {
-        return httpClient.getAllPlayersSuppressRequestException()
-                .stream()
-                .filter(playerItem -> httpClient.getPlayerByIdSuppressRequestException(playerItem.getId())
-                        .getRole().equals(role))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError(format("Player with role [%s]] was not found", role)));
     }
 
     /**
@@ -241,10 +226,9 @@ public abstract class PlayerTestBase {
      * Restores fields values for the supervisor in case if any data was changed during testing
      */
     private synchronized void restoreSupervisorData() {
-        val id = getPlayerIdByLogin(supervisorLogin);
-        val supervisorAfterTests = httpClient.getPlayerByIdSuppressRequestException(id);
+        val supervisorAfterTests = httpClient.getPlayerByIdSuppressRequestException(supervisorId);
         if (!supervisorAfterTests.equals(defaultSupervisorCondition)) {
-            httpClient.updatePlayer(id, supervisorLogin, defaultSupervisorCondition);
+            httpClient.updatePlayer(supervisorId, supervisorLogin, defaultSupervisorCondition);
         }
     }
 

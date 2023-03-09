@@ -2,6 +2,8 @@ package org.soloviova.liudmyla.tests;
 
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
 import io.restassured.http.ContentType;
 import lombok.val;
 import org.soloviova.liudmyla.entities.Player;
@@ -173,6 +175,7 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertNotEquals(playerAfterUpdate, playerAfterCreation, "Player was not updated");
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that a user cannot update other users and an admin cannot update other admins.")
     @Test(dataProvider = "twoDifferentPlayers", dataProviderClass = TestDataProviders.class,
             description = "Check that a user cannot update other users and an admin cannot update other admins.")
@@ -227,6 +230,7 @@ public class UpdatePlayerControllerTests extends PlayerTestBase {
         assertEquals(supervisorAfterUpdate, supervisor, "Supervisor should not have been updated");
     }
 
+    @Severity(SeverityLevel.CRITICAL)
     @Description("Test that a user cannot update admins.")
     @Test(dataProvider = "userAndAdmin", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot update admins.")

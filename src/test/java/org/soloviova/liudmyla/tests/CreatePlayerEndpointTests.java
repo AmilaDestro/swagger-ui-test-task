@@ -90,6 +90,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
     }
 
+    @Severity(SeverityLevel.MINOR)
     @Description("Test that an admin cannot create a new supervisor.")
     @Test(dataProvider = "customSupervisor", dataProviderClass = TestDataProviders.class,
             description = "Check that admin cannot create a new supervisor")
@@ -100,6 +101,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
         checkIfPlayerIsAvailableInAllPlayersList(customSupervisor.getLogin(), false);
     }
 
+    @Severity(SeverityLevel.MINOR)
     @Description("Test that any new user or admin cannot be created if his/her age is beyond allowed range " +
             "(less than 16 and more than 60 year old).")
     @Test(dataProvider = "usersBeyondAllowedAge", dataProviderClass = TestDataProviders.class,
@@ -159,6 +161,7 @@ public class CreatePlayerEndpointTests extends PlayerTestBase {
                 "Player 1 should not have been changed");
     }
 
+    @Severity(SeverityLevel.MINOR)
     @Description("Test that a user is unable to create a new admin or a supervisor.")
     @Test(dataProvider = "userAndSupervisorThenUserAndAdmin", dataProviderClass = TestDataProviders.class,
     description = "Check that a user cannot create neither new supervisor nor admin")
